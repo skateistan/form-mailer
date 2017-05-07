@@ -7,7 +7,7 @@ var superagent = require('superagent');
 var server = new Hapi.Server();
 server.connection({
   host: 'localhost',
-  port: 8000,
+  port: process.env.PORT || 8000,
   routes: {
     cors: true
   }
