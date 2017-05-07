@@ -17,6 +17,11 @@ server.connection({
 server.route({
   method: 'POST',
   path:'/sendmail',
+  config: {
+    cors: {
+      origin: ['*']
+    }
+  },
   handler: function (request, reply) {
     console.log('Request payload: ', request.payload);
     return sendMail(request.payload)
