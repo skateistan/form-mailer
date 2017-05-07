@@ -12,7 +12,6 @@ server.connection({
   }
 });
 
-// Add the route
 server.route({
   method: 'POST',
   path:'/sendmail',
@@ -22,7 +21,6 @@ server.route({
     }
   },
   handler: function (request, reply) {
-    console.log('Request payload: ', request.payload);
     return sendMail(request.payload)
       .then(api_res => reply('').code(api_res.status))
       .catch(api_err => reply('').code(api_err.status))
@@ -30,7 +28,6 @@ server.route({
 }
 );
 
-// Start the server
 server.start((err) => {
   if (err) {
       throw err;
@@ -48,7 +45,6 @@ function verifyCaptcha(req){
       .set('Content-Type', 'application/json')
       .send(params)
       .end((err, res)=>{
-        console.log('Recaptcha - res statusCode', res.statusCode);
         if (err) fnReject(err);
         else res.statusCode === 200 ? fnResolve(res.statusCode) : fnReject(res.statusCode);
       });
@@ -56,24 +52,26 @@ function verifyCaptcha(req){
 }
 
 function sendMail(params) {
-  let templateId;
-  const substitutions = params
+  let templateId, recipient;
+  const substitutions = params;
   if (params.formType === 'volunteer') {
     templateId = process.env.SENDGRID_TEMPLATE_VOLUNTEER;
+    recipient = process.env.RECIPIENT_VOLUNTEER;
   } else {
     templateId = process.env.SENDGRID_TEMPLATE_FUNDRAISE;
+    recipient = process.env.RECIPIENT_FUNDRAISE;
   }
   const compose = {
     "personalizations": [{
         "to": [{
-          "email": process.env.RECIPIENT,
+          "email": recipient,
           "name": "Skateistan"
         }],
         "substitutions": substitutions
     }],
     "from": {
-      "email": params.res_email,
-      "name": params.full_name
+      "email": "no-reply@skateistan.org",
+      "name": "Skateistan Webforms"
     },
     "template_id": templateId
   };
@@ -85,10 +83,12 @@ function sendMail(params) {
           .set('Authorization', 'Bearer ' + process.env.SENDGRID_API_KEY)
           .send(compose)
           .end((err, res)=>{
-            console.log('Sendgrid res', res.statusCode);
-            if (err) fnReject(err);
+            if (err) {
+              console.log('Sendgrid /mail/send err', err);
+              fnReject(err);
+            }
             else fnResolve(res);
           });
-      }).catch((g_res) => console.log('Captcha catch', g_res));
+      }).catch((g_res) => console.log('verifyCaptcha err', g_res));
     })
 }
