@@ -52,20 +52,9 @@ function verifyCaptcha(req){
 }
 
 function sendMail(params) {
-  let substitutions, templateId;
+  let templateId;
+  const substitutions = params
   if (params.formType === 'volunteer') {
-    substitutions = {
-      "full_name": params.fullName,
-      "res_email": params.email,
-      "res_age": params.age,
-      "res_location": params.location,
-      "res_interest": params.interest,
-      "res_help": params.help,
-      "res_skills": params.skills,
-      "res_weeks": params.weeks,
-      "res_months": params.months,
-      "res_experience": params.experience
-    };
     templateId = process.env.SENDGRID_TEMPLATE_VOLUNTEER;
   } else {
     templateId = process.env.SENDGRID_TEMPLATE_FUNDRAISE;
@@ -79,8 +68,8 @@ function sendMail(params) {
         "substitutions": substitutions
     }],
     "from": {
-      "email": params.email,
-      "name": params.fullName
+      "email": params.res_email,
+      "name": params.full_name
     },
     "template_id": templateId
   };
